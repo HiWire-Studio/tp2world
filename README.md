@@ -48,23 +48,19 @@ Since Hytale uses a server internally for both singleplayer and multiplayer, thi
 
 ## Commands
 
-| Command | Description | Executor | Permission |
-|---------|-------------|----------|------------|
-| `/tp2world <world>` | Teleport to a world's spawn point | Player only | `hiwire.tp2world.command.tp2world` |
-| `/tp2world <world> --player <name>` | Teleport another player to a world | Any | `hiwire.tp2world.command.tp2world` |
-| `/tp2world <world> --position <x y z>` | Teleport to specific coordinates | Player only | `hiwire.tp2world.command.tp2world` |
-| `/tp2world <world> --rotation <pitch yaw roll>` | Teleport with custom head rotation | Player only | `hiwire.tp2world.command.tp2world` |
-| `/tp2world <world> --bodyRotation <pitch yaw roll>` | Teleport with custom body rotation | Player only | `hiwire.tp2world.command.tp2world` |
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/tp2world <world> [options]` | Teleport to a world | `hiwire.tp2world.command.tp2world` |
 
-### Command Arguments
+### Arguments
 
-| Argument | Type | Description |
-|----------|------|-------------|
-| `world` | Required | The name of the world to teleport to (supports tab completion) |
-| `--player` | Optional | The player to teleport (default: yourself) |
-| `--position` | Optional | Target position (x y z), supports relative coordinates with ~ |
-| `--rotation` | Optional | Target head rotation (pitch yaw roll) in radians |
-| `--bodyRotation` | Optional | Target body rotation (pitch yaw roll) in radians |
+| Argument | Type | Description                                                           |
+|----------|------|-----------------------------------------------------------------------|
+| `world` | Required | The name of the world to teleport to (supports tab completion)        |
+| `--player` | Optional | The player to teleport (default: yourself)                            |
+| `--position` | Optional | Target position (x y z), supports relative coordinates with ~ (tilde) |
+| `--rotation` | Optional | Target head rotation (pitch yaw roll) in radians                      |
+| `--bodyRotation` | Optional | Target body rotation (pitch yaw roll) in radians                      |
 
 ### Default Behavior
 
