@@ -1,0 +1,6 @@
+Tp2World.Desc=Teleportiere zu einer Welt
+Tp2World.Param.World.Desc=Der Name der Zielwelt
+Tp2World.Param.Player.Desc=Der zu teleportierende Spieler (Standard: du selbst)
+Tp2World.Param.Position.Desc=Zielposition (x y z), unterstützt relative Koordinaten mit ~
+Tp2World.Param.Rotation.Desc=Ziel-Kopfrotation (pitch yaw roll) in Radiant
+Tp2World.Param.BodyRotation.Desc=Ziel-Körperrotation (pitch yaw roll) in Radiant
