@@ -1,0 +1,6 @@
+Tp2World.Desc=Teleport to a world
+Tp2World.Param.World.Desc=The name of the world to teleport to
+Tp2World.Param.Player.Desc=The player to teleport (default: yourself)
+Tp2World.Param.Position.Desc=Target position (x y z), supports relative coordinates with ~
+Tp2World.Param.Rotation.Desc=Target head rotation (pitch yaw roll) in radians
+Tp2World.Param.BodyRotation.Desc=Target body rotation (pitch yaw roll) in radians
