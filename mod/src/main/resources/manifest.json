@@ -1,0 +1,13 @@
+{
+    "Group": "HiWire",
+    "Name": "Tp2World",
+    "Version": "0.1.0",
+    "Authors": [
+        {
+            "Name": "HiWire-Nick"
+        }
+    ],
+    "Main": "studio.hiwire.tp2world.Tp2WorldPlugin",
+    "ServerVersion": "*",
+    "IncludesAssetPack": true
+}

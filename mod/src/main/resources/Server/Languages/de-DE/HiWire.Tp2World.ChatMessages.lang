@@ -1,0 +1,2 @@
+Command.Tp2World.TeleportedToWorld={ModPrefix} Teleportiert zu Welt '{WorldName}' bei ({X}, {Y}, {Z}) mit Kopfrotation: ({HeadPitch}, {HeadYaw}, {HeadRoll}) und Körperrotation: ({BodyPitch}, {BodyYaw}, {BodyRoll})
+Command.Tp2World.TeleportedPlayerToWorld={ModPrefix} {PlayerName} zu Welt '{WorldName}' teleportiert bei ({X}, {Y}, {Z}) mit Kopfrotation: ({HeadPitch}, {HeadYaw}, {HeadRoll}) und Körperrotation: ({BodyPitch}, {BodyYaw}, {BodyRoll})
