@@ -86,14 +86,14 @@ Teleport with relative position (10 blocks up from spawn):
 /tp2world arena --position ~ ~10 ~
 ```
 
-Teleport with custom rotation (facing south, π radians ≈ 3.14159):
+Teleport with custom head rotation (facing south, π radians ≈ 3.14159):
 ```
 /tp2world spawn --rotation 0 3.14159 0
 ```
 
-Teleport another player with custom head and body rotation (facing east, π/2 radians ≈ 1.5708):
+Teleport another player with custom head and body rotation (facing east, -π/2 radians ≈ -1.5708):
 ```
-/tp2world arena --player Steve --rotation 0 1.5708 0 --bodyRotation 0 1.5708 0
+/tp2world arena --player Steve --rotation 0 -1.5708 0 --bodyRotation 0 -1.5708 0
 ```
 
 ## Permissions
