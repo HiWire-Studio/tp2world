@@ -20,7 +20,7 @@ public class Tp2WorldPlugin extends JavaPlugin {
   public static final String PREFIX = "[HiWire:Tp2World]";
   private static final Path OVERRIDES_PATH = Path.of("overrides");
   private static final List<String> TRANSLATION_FILES =
-      List.of("HiWire.Tp2World.ChatMessages.lang");
+      List.of("HiWire.Tp2World.ChatMessages.lang", "HiWire.Tp2World.Commands.lang");
   private static final List<String> SUPPORTED_LANGUAGES = List.of("en-US", "de-DE");
 
   private final Config<Tp2WorldConfig> config = withConfig(Tp2WorldConfig.CODEC);
@@ -48,14 +48,15 @@ public class Tp2WorldPlugin extends JavaPlugin {
 
   @Override
   protected void start0() {
-    super.start0();
-
-    // Register overrides folder as asset pack for user customizatio
+    // Register overrides folder as asset pack for user customization
+    // Must be registered before super.start0() so overrides take precedence over the main pack
     final var overridesDir = getDataDirectory().resolve(OVERRIDES_PATH);
     if (Files.exists(overridesDir)) {
       AssetModule.get().registerPack(getIdentifier() + "_overrides", overridesDir, getManifest());
       getLogger().at(Level.INFO).log("Registered overrides asset pack from %s", overridesDir);
     }
+
+    super.start0();
   }
 
   @Override
