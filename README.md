@@ -1,4 +1,4 @@
-# HiWire - Tp2World v0.1.1
+# HiWire - Tp2World v0.1.2
 
 A teleport-to-world command mod for Hytale single- and multiplayer by HiWire Studio
 
