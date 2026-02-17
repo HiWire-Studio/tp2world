@@ -114,16 +114,17 @@ The configuration file is located at `mods/HiWire_Tp2World/config.json`.
 
 ## Customization
 
-The mod supports user overrides for translations. Place your customizations in the mod's data folder under `/overrides`.
+The mod supports user overrides for translations. Place your customizations in the mod's data folder under `mods/HiWire_Tp2World_Overrides`.
 
 ### Translation Files
 
-Translation files are automatically created and updated at:
-```
-mods/HiWire_Tp2World/overrides/Server/Languages/{language}/
-```
+The mod uses translation files located in `/Server/Languages/{language}/HiWire/Tp2World/`:
 
-Edit these files to customize messages without modifying the original mod files.
+- `ChatMessages.lang` - Chat notifications and command messages
+- `Commands.lang` - Command labels
+
+Translation files with all keys are created and automatically updated at `mods/HiWire_Tp2World_Overrides/Server/Languages/{language}/HiWire/Tp2World/`.
+Edit these files to customize translations without modifying the original mod files.
 
 ## Building from Source
 
