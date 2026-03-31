@@ -2,6 +2,7 @@
 # Plugins
 spotless = "8.1.0"
 idea_ext = "1.3"
+version_catalog_update = "1.1.0"
 
 # Tools
 google-java-format = "1.33.0"
@@ -24,3 +25,4 @@ mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.
 [plugins]
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 idea_ext = { id = "org.jetbrains.gradle.plugin.idea-ext", version.ref = "idea_ext" }
+version_catalog_update = { id = "nl.littlerobots.version-catalog-update", version.ref = "version_catalog_update" }

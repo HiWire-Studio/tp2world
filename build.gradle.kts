@@ -1,10 +1,12 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
+import nl.littlerobots.vcu.plugin.resolver.VersionSelectors
 import org.jetbrains.gradle.ext.ProjectSettings
 import org.jetbrains.gradle.ext.runConfigurations
 
 plugins {
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.idea.ext)
+    alias(libs.plugins.version.catalog.update)
 }
 
 subprojects {
@@ -49,4 +51,13 @@ idea {
             }
         }
     }
+}
+
+versionCatalogUpdate {
+  versionSelector(VersionSelectors.STABLE)
+  sortByKey = false
+
+  keep {
+    keepUnusedVersions = true
+  }
 }
