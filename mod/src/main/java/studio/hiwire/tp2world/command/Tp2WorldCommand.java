@@ -2,8 +2,8 @@ package studio.hiwire.tp2world.command;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.math.vector.Rotation3f;
+import com.hypixel.hytale.math.vector.Rotation3fc;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
@@ -19,6 +19,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import javax.annotation.Nonnull;
+import org.joml.Vector3d;
 import studio.hiwire.tp2world.Tp2WorldPlugin;
 
 /**
@@ -45,8 +46,8 @@ public class Tp2WorldCommand extends CommandBase {
   @Nonnull private final RequiredArg<World> worldArg;
   @Nonnull private final OptionalArg<PlayerRef> playerArg;
   @Nonnull private final OptionalArg<RelativeDoublePosition> positionArg;
-  @Nonnull private final OptionalArg<Vector3f> rotationArg;
-  @Nonnull private final OptionalArg<Vector3f> bodyRotationArg;
+  @Nonnull private final OptionalArg<Rotation3fc> rotationArg;
+  @Nonnull private final OptionalArg<Rotation3fc> bodyRotationArg;
 
   public Tp2WorldCommand() {
     super("tp2world", "HiWire.Tp2World.Commands.Tp2World.Desc");
@@ -157,8 +158,8 @@ public class Tp2WorldCommand extends CommandBase {
             && !this.bodyRotationArg.provided(context);
 
     Vector3d targetPosition;
-    Vector3f targetHeadRotation;
-    Vector3f targetBodyRotation;
+    Rotation3f targetHeadRotation;
+    Rotation3f targetBodyRotation;
     Teleport teleport;
 
     if (useSpawnPoint) {
@@ -172,9 +173,9 @@ public class Tp2WorldCommand extends CommandBase {
       }
 
       targetPosition = spawnPoint.getPosition();
-      targetHeadRotation = spawnPoint.getRotation();
+      targetHeadRotation = new Rotation3f(spawnPoint.getRotation());
       // Body rotation from spawn: pitch=0, yaw from spawn, roll=0
-      targetBodyRotation = new Vector3f(0, targetHeadRotation.getYaw(), 0);
+      targetBodyRotation = new Rotation3f(0, targetHeadRotation.yaw(), 0);
       teleport = Teleport.createForPlayer(targetWorld, spawnPoint);
     } else {
       // Custom position or rotation - need to build teleport manually
@@ -184,7 +185,7 @@ public class Tp2WorldCommand extends CommandBase {
         targetPosition = relPos.getRelativePosition(previousPos, targetWorld);
 
         // Default head rotation to 0 0 0 when custom position provided
-        targetHeadRotation = new Vector3f(0, 0, 0);
+        targetHeadRotation = new Rotation3f(0, 0, 0);
       } else {
         // Use world spawn point position and rotation
         final var spawnPoint =
@@ -196,24 +197,24 @@ public class Tp2WorldCommand extends CommandBase {
         }
 
         targetPosition = spawnPoint.getPosition();
-        targetHeadRotation = spawnPoint.getRotation();
+        targetHeadRotation = new Rotation3f(spawnPoint.getRotation());
       }
 
       // Apply head rotation override if provided
       if (this.rotationArg.provided(context)) {
-        targetHeadRotation = this.rotationArg.get(context);
+        targetHeadRotation = new Rotation3f(this.rotationArg.get(context));
       }
 
       // Determine body rotation
       if (this.bodyRotationArg.provided(context)) {
-        targetBodyRotation = this.bodyRotationArg.get(context);
+        targetBodyRotation = new Rotation3f(this.bodyRotationArg.get(context));
       } else {
         // Default body rotation: preserve previous pitch/roll, use head yaw
         targetBodyRotation =
-            new Vector3f(
-                previousBodyRotation.getPitch(),
-                targetHeadRotation.getYaw(),
-                previousBodyRotation.getRoll());
+            new Rotation3f(
+                previousBodyRotation.pitch(),
+                targetHeadRotation.yaw(),
+                previousBodyRotation.roll());
       }
 
       // Create teleport with target world (constructor needed for cross-world teleport)
@@ -226,23 +227,15 @@ public class Tp2WorldCommand extends CommandBase {
     // Convert rotations from radians to degrees for display (default to 0 if NaN)
     final float radToDeg = 57.295776f;
     final var headRotDeg =
-        new Vector3f(
-            Float.isNaN(targetHeadRotation.getPitch())
-                ? 0
-                : targetHeadRotation.getPitch() * radToDeg,
-            Float.isNaN(targetHeadRotation.getYaw()) ? 0 : targetHeadRotation.getYaw() * radToDeg,
-            Float.isNaN(targetHeadRotation.getRoll())
-                ? 0
-                : targetHeadRotation.getRoll() * radToDeg);
+        new Rotation3f(
+            Float.isNaN(targetHeadRotation.pitch()) ? 0 : targetHeadRotation.pitch() * radToDeg,
+            Float.isNaN(targetHeadRotation.yaw()) ? 0 : targetHeadRotation.yaw() * radToDeg,
+            Float.isNaN(targetHeadRotation.roll()) ? 0 : targetHeadRotation.roll() * radToDeg);
     final var bodyRotDeg =
-        new Vector3f(
-            Float.isNaN(targetBodyRotation.getPitch())
-                ? 0
-                : targetBodyRotation.getPitch() * radToDeg,
-            Float.isNaN(targetBodyRotation.getYaw()) ? 0 : targetBodyRotation.getYaw() * radToDeg,
-            Float.isNaN(targetBodyRotation.getRoll())
-                ? 0
-                : targetBodyRotation.getRoll() * radToDeg);
+        new Rotation3f(
+            Float.isNaN(targetBodyRotation.pitch()) ? 0 : targetBodyRotation.pitch() * radToDeg,
+            Float.isNaN(targetBodyRotation.yaw()) ? 0 : targetBodyRotation.yaw() * radToDeg,
+            Float.isNaN(targetBodyRotation.roll()) ? 0 : targetBodyRotation.roll() * radToDeg);
 
     // Send messages
     if (teleportingSelf) {
@@ -252,15 +245,15 @@ public class Tp2WorldCommand extends CommandBase {
             MESSAGE_TELEPORTED_TO_WORLD
                 .param("ModPrefix", Tp2WorldPlugin.PREFIX)
                 .param("WorldName", worldName)
-                .param("X", String.format("%.2f", targetPosition.getX()))
-                .param("Y", String.format("%.2f", targetPosition.getY()))
-                .param("Z", String.format("%.2f", targetPosition.getZ()))
-                .param("HeadPitch", String.format("%.2f", headRotDeg.getPitch()))
-                .param("HeadYaw", String.format("%.2f", headRotDeg.getYaw()))
-                .param("HeadRoll", String.format("%.2f", headRotDeg.getRoll()))
-                .param("BodyPitch", String.format("%.2f", bodyRotDeg.getPitch()))
-                .param("BodyYaw", String.format("%.2f", bodyRotDeg.getYaw()))
-                .param("BodyRoll", String.format("%.2f", bodyRotDeg.getRoll())));
+                .param("X", String.format("%.2f", targetPosition.x()))
+                .param("Y", String.format("%.2f", targetPosition.y()))
+                .param("Z", String.format("%.2f", targetPosition.z()))
+                .param("HeadPitch", String.format("%.2f", headRotDeg.pitch()))
+                .param("HeadYaw", String.format("%.2f", headRotDeg.yaw()))
+                .param("HeadRoll", String.format("%.2f", headRotDeg.roll()))
+                .param("BodyPitch", String.format("%.2f", bodyRotDeg.pitch()))
+                .param("BodyYaw", String.format("%.2f", bodyRotDeg.yaw()))
+                .param("BodyRoll", String.format("%.2f", bodyRotDeg.roll())));
       }
     } else {
       // Teleporting another player - command sender always gets confirmation
@@ -269,15 +262,15 @@ public class Tp2WorldCommand extends CommandBase {
               .param("ModPrefix", Tp2WorldPlugin.PREFIX)
               .param("PlayerName", targetPlayerRef.getUsername())
               .param("WorldName", worldName)
-              .param("X", String.format("%.2f", targetPosition.getX()))
-              .param("Y", String.format("%.2f", targetPosition.getY()))
-              .param("Z", String.format("%.2f", targetPosition.getZ()))
-              .param("HeadPitch", String.format("%.2f", headRotDeg.getPitch()))
-              .param("HeadYaw", String.format("%.2f", headRotDeg.getYaw()))
-              .param("HeadRoll", String.format("%.2f", headRotDeg.getRoll()))
-              .param("BodyPitch", String.format("%.2f", bodyRotDeg.getPitch()))
-              .param("BodyYaw", String.format("%.2f", bodyRotDeg.getYaw()))
-              .param("BodyRoll", String.format("%.2f", bodyRotDeg.getRoll())));
+              .param("X", String.format("%.2f", targetPosition.x()))
+              .param("Y", String.format("%.2f", targetPosition.y()))
+              .param("Z", String.format("%.2f", targetPosition.z()))
+              .param("HeadPitch", String.format("%.2f", headRotDeg.pitch()))
+              .param("HeadYaw", String.format("%.2f", headRotDeg.yaw()))
+              .param("HeadRoll", String.format("%.2f", headRotDeg.roll()))
+              .param("BodyPitch", String.format("%.2f", bodyRotDeg.pitch()))
+              .param("BodyYaw", String.format("%.2f", bodyRotDeg.yaw()))
+              .param("BodyRoll", String.format("%.2f", bodyRotDeg.roll())));
 
       // Config controls if the teleported player sees a message
       if (Tp2WorldPlugin.get().getConfig().isNotifyTeleportedPlayer()) {
@@ -285,15 +278,15 @@ public class Tp2WorldCommand extends CommandBase {
             MESSAGE_TELEPORTED_TO_WORLD
                 .param("ModPrefix", Tp2WorldPlugin.PREFIX)
                 .param("WorldName", worldName)
-                .param("X", String.format("%.2f", targetPosition.getX()))
-                .param("Y", String.format("%.2f", targetPosition.getY()))
-                .param("Z", String.format("%.2f", targetPosition.getZ()))
-                .param("HeadPitch", String.format("%.2f", headRotDeg.getPitch()))
-                .param("HeadYaw", String.format("%.2f", headRotDeg.getYaw()))
-                .param("HeadRoll", String.format("%.2f", headRotDeg.getRoll()))
-                .param("BodyPitch", String.format("%.2f", bodyRotDeg.getPitch()))
-                .param("BodyYaw", String.format("%.2f", bodyRotDeg.getYaw()))
-                .param("BodyRoll", String.format("%.2f", bodyRotDeg.getRoll())));
+                .param("X", String.format("%.2f", targetPosition.x()))
+                .param("Y", String.format("%.2f", targetPosition.y()))
+                .param("Z", String.format("%.2f", targetPosition.z()))
+                .param("HeadPitch", String.format("%.2f", headRotDeg.pitch()))
+                .param("HeadYaw", String.format("%.2f", headRotDeg.yaw()))
+                .param("HeadRoll", String.format("%.2f", headRotDeg.roll()))
+                .param("BodyPitch", String.format("%.2f", bodyRotDeg.pitch()))
+                .param("BodyYaw", String.format("%.2f", bodyRotDeg.yaw()))
+                .param("BodyRoll", String.format("%.2f", bodyRotDeg.roll())));
       }
     }
   }
