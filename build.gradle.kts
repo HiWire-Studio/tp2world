@@ -26,6 +26,10 @@ subprojects {
         useJUnitPlatform()
     }
 
+    tasks.withType<JavaCompile>().configureEach {
+        options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:removal"))
+    }
+
     configure<SpotlessExtension> {
         format("misc") {
             target("*.gradle", ".gitattributes", ".gitignore")
