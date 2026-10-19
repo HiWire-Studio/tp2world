@@ -4,6 +4,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.math.vector.Rotation3fc;
+import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
@@ -18,7 +19,9 @@ import com.hypixel.hytale.server.core.permissions.HytalePermissions;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import java.util.logging.Level;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.joml.Vector3d;
 import studio.hiwire.tp2world.Tp2WorldPlugin;
 
@@ -36,6 +39,8 @@ public class Tp2WorldCommand extends CommandBase {
       Message.translation("server.commands.errors.playerNotInWorld");
   private static final Message MESSAGE_WORLD_SPAWN_NOT_SET =
       Message.translation("server.world.spawn.notSet");
+  private static final Message MESSAGE_SPAWN_UNAVAILABLE =
+      Message.translation("server.commands.errors.spawnUnavailable");
   private static final Message MESSAGE_TELEPORTED_TO_WORLD =
       Message.translation("HiWire.Tp2World.ChatMessages.Command.Tp2World.TeleportedToWorld");
   private static final Message MESSAGE_TELEPORTED_PLAYER_TO_WORLD =
@@ -139,6 +144,64 @@ public class Tp2WorldCommand extends CommandBase {
       boolean teleportingSelf,
       @Nonnull PlayerRef targetPlayerRef) {
 
+    // A provided position replaces the spawn point, so there is nothing to resolve
+    if (this.positionArg.provided(context)) {
+      teleport(context, store, ref, targetWorld, worldName, teleportingSelf, targetPlayerRef, null);
+      return;
+    }
+
+    final var spawnProvider = targetWorld.getWorldConfig().getSpawnProvider();
+    if (spawnProvider == null) {
+      context.sendMessage(MESSAGE_WORLD_SPAWN_NOT_SET.param("worldName", worldName));
+      return;
+    }
+
+    // Spawn points resolve asynchronously; continue on the player's current world thread
+    final var currentWorld = store.getExternalData().getWorld();
+    spawnProvider
+        .getSpawnPointAsync(targetWorld, targetPlayerRef.getUuid())
+        .thenAcceptAsync(
+            spawnPoint -> {
+              if (!ref.isValid()) {
+                return;
+              }
+              if (spawnPoint == null) {
+                context.sendMessage(MESSAGE_WORLD_SPAWN_NOT_SET.param("worldName", worldName));
+                return;
+              }
+              teleport(
+                  context,
+                  store,
+                  ref,
+                  targetWorld,
+                  worldName,
+                  teleportingSelf,
+                  targetPlayerRef,
+                  spawnPoint);
+            },
+            currentWorld)
+        .exceptionally(
+            throwable -> {
+              Tp2WorldPlugin.get()
+                  .getLogger()
+                  .at(Level.WARNING)
+                  .withCause(throwable)
+                  .log("Failed to resolve spawn point of world " + worldName);
+              context.sendMessage(MESSAGE_SPAWN_UNAVAILABLE.param("world", worldName));
+              return null;
+            });
+  }
+
+  private void teleport(
+      @Nonnull CommandContext context,
+      @Nonnull Store<EntityStore> store,
+      @Nonnull Ref<EntityStore> ref,
+      @Nonnull World targetWorld,
+      @Nonnull String worldName,
+      boolean teleportingSelf,
+      @Nonnull PlayerRef targetPlayerRef,
+      @Nullable Transform spawnPoint) {
+
     // Get current position/rotation for relative calculations
     final var transformComponent = store.getComponent(ref, TransformComponent.getComponentType());
     final var headRotationComponent = store.getComponent(ref, HeadRotation.getComponentType());
@@ -164,14 +227,6 @@ public class Tp2WorldCommand extends CommandBase {
 
     if (useSpawnPoint) {
       // Use world spawn point directly with createForPlayer
-      final var spawnPoint =
-          targetWorld.getWorldConfig().getSpawnProvider().getSpawnPoint(ref, store);
-
-      if (spawnPoint == null) {
-        context.sendMessage(MESSAGE_WORLD_SPAWN_NOT_SET.param("worldName", worldName));
-        return;
-      }
-
       targetPosition = spawnPoint.getPosition();
       targetHeadRotation = new Rotation3f(spawnPoint.getRotation());
       // Body rotation from spawn: pitch=0, yaw from spawn, roll=0
@@ -188,14 +243,6 @@ public class Tp2WorldCommand extends CommandBase {
         targetHeadRotation = new Rotation3f(0, 0, 0);
       } else {
         // Use world spawn point position and rotation
-        final var spawnPoint =
-            targetWorld.getWorldConfig().getSpawnProvider().getSpawnPoint(ref, store);
-
-        if (spawnPoint == null) {
-          context.sendMessage(MESSAGE_WORLD_SPAWN_NOT_SET.param("worldName", worldName));
-          return;
-        }
-
         targetPosition = spawnPoint.getPosition();
         targetHeadRotation = new Rotation3f(spawnPoint.getRotation());
       }
